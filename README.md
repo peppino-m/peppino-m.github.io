@@ -1,0 +1,1 @@
+Credit: Eumetsat, NASA
