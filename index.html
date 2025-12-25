@@ -10,10 +10,10 @@
 <body>
     <p id="timestamp">Time</p>
     <p id="credit"> Credit: <a href="https://view.eumetsat.int/productviewer?v=mtg_fd:rgb_geocolour" target="_blank"> EUMETSAT</a> and <a href="https://blackmarble.gsfc.nasa.gov/#product" target="_blank">NASA </a></p>
-    <div>
-        <button class = button_selectors id="button_world" type="button">World</button>
-        <button class = button_selectors id="button_europe" type="button">Europe</button>
-        <button class = button_selectors id="button_switzerland" type="button">Switzerland</button>
+    <div id="buttons_container">
+        <button class = button_selectors id="button_world" type="button">W</button>
+        <button class = button_selectors id="button_europe" type="button">E</button>
+        <button class = button_selectors id="button_switzerland" type="button">S</button>
     </div>
     <div class="img_box">
         <img id="meteosatEurope" width="100%">
@@ -21,7 +21,7 @@
     <script>
         // Get current date and time and reduce it by 20 minutes
         const now = new Date();
-        const nowMinusLag = new Date(now.getTime() - 400 * 60 * 1000); 
+        const nowMinusLag = new Date(now.getTime() - 20 * 60 * 1000); 
 
         // Get UTC components
         const utcDate = nowMinusLag.toISOString().split('T')[0];
@@ -43,27 +43,50 @@
             utcRoundedMinutes = "45";
         }
 
-        let bbox = "29,-30,66,40";
-        document.getElementById("button_world").addEventListener("click", () => {
-            bbox = "-40,-77,70,77";
-            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(bbox)}&width=1000&height=1000&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
-            document.getElementById('meteosatEurope').src = imageUrl;
-        });
-        document.getElementById("button_europe").addEventListener("click", () => {
-            bbox = "29,-30,66,40";
-            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(bbox)}&width=5000&height=2700&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
-            document.getElementById('meteosatEurope').src = imageUrl;
-        });
-        document.getElementById("button_switzerland").addEventListener("click", () => {
-            bbox = "44,4,49,12";
-            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(bbox)}&width=2500&height=1350&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
-            document.getElementById('meteosatEurope').src = imageUrl;
-        });
+        // Set Views
+        const views = {
+            world: {
+                bbox: "-30,-77,70,77",
+                width: 2500,
+                height: 1350
+            },
+            europe: {
+                bbox: "29,-30,66,40",
+                width: 5000,
+                height: 2700
+            },
+            switzerland: {
+                bbox: "44,4,49,12",
+                width: 2500,
+                height: 1350
+            }
+        };
 
+        // Function to edit URL by Views and Time
+        function loadView(viewName) {
+            const view = views[viewName];
 
-        // Edit image link dynamically
-        const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(bbox)}&width=5000&height=2700&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
-        document.getElementById('meteosatEurope').src = imageUrl;
+            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(view.bbox)}&width=${view.width}&height=${view.height}&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
+
+            document.getElementById("meteosatEurope").src = imageUrl;
+
+            // persist selection
+            localStorage.setItem("selectedView", viewName);
+        }
+
+        // Change View on Click
+        document.getElementById("button_world")
+            .addEventListener("click", () => loadView("world"));
+
+        document.getElementById("button_europe")
+            .addEventListener("click", () => loadView("europe"));
+
+        document.getElementById("button_switzerland")
+            .addEventListener("click", () => loadView("switzerland"));
+
+        // Save View
+        const savedView = localStorage.getItem("selectedView") || "europe";
+        loadView(savedView);
 
         // Edit timestamp on bottom
         document.getElementById('timestamp').innerHTML = utcDay + "." + utcMonth + "." + utcYear + " – " + utcHours + ":" + utcRoundedMinutes + " UTC"
@@ -75,7 +98,10 @@
     function autoRefresh() {
         window.location = window.location.href;
     }
-    setInterval('autoRefresh()', 60000);
+    setInterval(() => {
+            const savedView = localStorage.getItem("selectedView") || "europe";
+            loadView(savedView);
+        }, 60000);
     </script>
 </body>
 </html>

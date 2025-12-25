@@ -19,7 +19,18 @@ a:hover {
 .img_box {
     background-color: transparent;
     border-radius: 5px;
+    left: 1px;
     display: grid;
+}
+
+.button_selectors {
+    background-color: rgba(245, 241, 241, 0.512);
+    top: 50%;
+    margin: 2px;
+    width: 30px;
+    height: 30px;
+    font-weight: bold;
+    border-radius: 10px;
 }
 
 /* Elements */
@@ -27,6 +38,13 @@ a:hover {
     max-width: 100%;
     max-height: 100vh;
     margin: auto;
+}
+
+#buttons_container {
+    position: absolute;
+    margin-top: 10px;
+    left: 10px;
+    width: 34px;
 }
 
 #timestamp {
