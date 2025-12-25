@@ -1,9 +1,19 @@
 body{
     background-color: black;
+    margin: 0;
+    padding: 0;
 }
 
-#div_main {
+.img_box {
     background-color: transparent;
+    border-radius: 5px;
+    display: grid;
+}
+
+#meteosatEurope {
+    max-width: 100%;
+    max-height: 100vh;
+    margin: auto;
 }
 
 #timestamp {
@@ -13,4 +23,6 @@ body{
     position: absolute;
     left: 20px;
     bottom: 10px;
+    padding: 5px;
+    border-radius: 3px;
 }
