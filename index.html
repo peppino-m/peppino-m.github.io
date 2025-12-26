@@ -19,36 +19,13 @@
         <img id="meteosatEurope" width="100%">
     </div>
     <script>
-        // Get current date and time and reduce it by 20 minutes
-        const now = new Date();
-        const nowMinusLag = new Date(now.getTime() - 20 * 60 * 1000); 
-
-        // Get UTC components
-        const utcDate = nowMinusLag.toISOString().split('T')[0];
-        const utcMinutes = nowMinusLag.getUTCMinutes();
-        const utcHours = nowMinusLag.getUTCHours();
-        const utcDay = nowMinusLag.getDay();
-        const utcMonth = nowMinusLag.getMonth();
-        const utcYear = nowMinusLag.getFullYear();
-        
-        // Round DOWN to last quarter hour
-        let utcRoundedMinutes;
-        if (utcMinutes < 15) {
-            utcRoundedMinutes = "00";
-        } else if (utcMinutes >=15 && utcMinutes < 30) {
-            utcRoundedMinutes = "15";
-        } else if (utcMinutes >= 30 && utcMinutes < 45) {
-            utcRoundedMinutes = "30";
-        } else {
-            utcRoundedMinutes = "45";
-        }
-
+    
         // Set Views
         const views = {
             world: {
-                bbox: "-30,-77,70,77",
+                bbox: "-77,-77,77,77",
                 width: 2500,
-                height: 1350
+                height: 2500
             },
             europe: {
                 bbox: "29,-30,66,40",
@@ -64,15 +41,27 @@
 
         // Function to edit URL by Views and Time
         function loadView(viewName) {
+            const now = new Date();
+            const nowMinusLag = new Date(now.getTime() - 20 * 60 * 1000);
+
+            const utcDate = nowMinusLag.toISOString().split('T')[0];
+            const utcHours = nowMinusLag.getUTCHours();
+            const utcMinutes = nowMinusLag.getUTCMinutes();
+            const utcRoundedMinutes = Math.floor(utcMinutes / 5) * 5;
+            const utcformattedMinutes = String(utcRoundedMinutes).padStart(2, '0');
+
             const view = views[viewName];
 
-            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&styles=&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(view.bbox)}&width=${view.width}&height=${view.height}&time=${encodeURIComponent(utcDate)}T${encodeURIComponent(utcHours)}:${encodeURIComponent(utcRoundedMinutes)}:00.000Z`;
+            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(view.bbox)}&width=${view.width}&height=${view.height}&time=${utcDate}T${utcHours}:${utcformattedMinutes}:00.000Z`;
 
             document.getElementById("meteosatEurope").src = imageUrl;
 
-            // persist selection
+            document.getElementById('timestamp').innerHTML =
+                `${nowMinusLag.getUTCDate()}.${nowMinusLag.getUTCMonth()+1}.${nowMinusLag.getUTCFullYear()} – ${utcHours}:${utcformattedMinutes} UTC`;
+
             localStorage.setItem("selectedView", viewName);
         }
+
 
         // Change View on Click
         document.getElementById("button_world")
@@ -88,20 +77,19 @@
         const savedView = localStorage.getItem("selectedView") || "europe";
         loadView(savedView);
 
-        // Edit timestamp on bottom
-        document.getElementById('timestamp').innerHTML = utcDay + "." + utcMonth + "." + utcYear + " – " + utcHours + ":" + utcRoundedMinutes + " UTC"
-
+    
     </script>
 
     <script>
-        //auto refresh fn every 60 seconds
+    //auto refresh fn every 60 seconds
     function autoRefresh() {
         window.location = window.location.href;
     }
     setInterval(() => {
             const savedView = localStorage.getItem("selectedView") || "europe";
             loadView(savedView);
-        }, 60000);
+        }, 6000);
+
     </script>
 </body>
 </html>
