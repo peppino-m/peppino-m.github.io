@@ -15,12 +15,21 @@
         <button class = button_selectors id="button_europe" type="button">E</button>
         <button class = button_selectors id="button_switzerland" type="button">S</button>
     </div>
+    <div class="slidecontainer">
+        <input type="range" min="-24" max="0" value="0" class="slider" id="time_slider">
+    </div>  
     <div class="img_box">
         <img id="meteosatEurope" width="100%">
     </div>
+
+
+
     <script>
-    
-        // Set Views
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // ---------------------------
+        // Views
+        // ---------------------------
         const views = {
             world: {
                 bbox: "-77,-77,77,77",
@@ -39,73 +48,108 @@
             }
         };
 
-        // Function to edit URL by Views and Time
-        function loadView(viewName) {
-            // 1. Current time
+        // ---------------------------
+        // Time handling
+        // ---------------------------
+        function getCurrentTime() {
             const now = new Date();
 
-            // 2. Subtract lag (20 minutes)
+            // subtract 20 minutes
             const corrected = new Date(now.getTime() - 20 * 60 * 1000);
 
-            // 3. Round DOWN to last 5-minute boundary (UTC-safe)
+            // round down to nearest 5 minutes
             corrected.setUTCMinutes(
                 Math.floor(corrected.getUTCMinutes() / 5) * 5,
-                0,   // seconds
-                0    // milliseconds
+                0,
+                0
             );
 
-            // 4. Extract from fully corrected date
-            const correctedDate = corrected.toISOString().split('T')[0];
-            const correctedHours = String(corrected.getUTCHours()).padStart(2, '0');
-            const correcedMinutes = String(corrected.getUTCMinutes()).padStart(2, '0');
+            return corrected;
+        }
 
+        function editTimestamp(time) {
+            document.getElementById("timestamp").innerHTML =
+                time.toLocaleString("de-CH", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                });
+        }
 
-
+        // ---------------------------
+        // Load view
+        // ---------------------------
+        function loadView(viewName, time) {
             const view = views[viewName];
 
-            const imageUrl = `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0&layers=mtg_fd:rgb_geocolour&format=image/jpeg&crs=EPSG:4326&bbox=${encodeURIComponent(view.bbox)}&width=${view.width}&height=${view.height}&time=${correctedDate}T${correctedHours}:${correcedMinutes}:00.000Z`;
+            const date = time.toISOString().split("T")[0];
+            const hours = String(time.getUTCHours()).padStart(2, "0");
+            const minutes = String(time.getUTCMinutes()).padStart(2, "0");
+
+            const imageUrl =
+                `https://view.eumetsat.int/geoserver/wms?service=WMS&request=GetMap&version=1.3.0` +
+                `&layers=mtg_fd:rgb_geocolour` +
+                `&format=image/jpeg` +
+                `&crs=EPSG:4326` +
+                `&bbox=${encodeURIComponent(view.bbox)}` +
+                `&width=${view.width}` +
+                `&height=${view.height}` +
+                `&time=${date}T${hours}:${minutes}:00.000Z`;
 
             document.getElementById("meteosatEurope").src = imageUrl;
 
-            document.getElementById('timestamp').innerHTML = corrected.toLocaleString("de-CH", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false
-            });
-
             localStorage.setItem("selectedView", viewName);
+            editTimestamp(time);
         }
 
+        // ---------------------------
+        // Button handlers
+        // ---------------------------
+        function handleViewChange(viewName) {
+            const time = getCurrentTime();
+            const slider_element = document.getElementById("time_slider");
+            const slider = Number(slider_element.value);
+            var time_minus_slider = new Date(time.getTime() + slider * 60 * 60 * 1000);
+            loadView(viewName, time_minus_slider);
+        }
 
-        // Change View on Click
         document.getElementById("button_world")
-            .addEventListener("click", () => loadView("world"));
+            .addEventListener("click", () => handleViewChange("world"));
 
         document.getElementById("button_europe")
-            .addEventListener("click", () => loadView("europe"));
+            .addEventListener("click", () => handleViewChange("europe"));
 
         document.getElementById("button_switzerland")
-            .addEventListener("click", () => loadView("switzerland"));
+            .addEventListener("click", () => handleViewChange("switzerland"));
 
-        // Save View
+        // ---------------------------
+        // Initial load
+        // ---------------------------
         const savedView = localStorage.getItem("selectedView") || "europe";
-        loadView(savedView);
+        handleViewChange(savedView);
 
-    
-    </script>
-
-    <script>
-    //auto refresh fn every 60 seconds
-    function autoRefresh() {
-        window.location = window.location.href;
-    }
-    setInterval(() => {
+        // ---------------------------
+        // Slider (currently logging only)
+        // ---------------------------
+        const slider = document.getElementById("time_slider");
+        slider.oninput = function () {
             const savedView = localStorage.getItem("selectedView") || "europe";
-            loadView(savedView);
-        }, 60000);
+            handleViewChange(savedView);
+        };
+
+        //auto refresh fn every 60 seconds
+        function autoRefresh() {
+            window.location = window.location.href;
+        }
+        setInterval(() => {
+                const savedView = localStorage.getItem("selectedView") || "europe";
+                handleViewChange(savedView);
+            }, 60000);
+
+    });
 
     </script>
 </body>
