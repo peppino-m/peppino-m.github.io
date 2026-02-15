@@ -17,17 +17,16 @@ a:hover {
 
 /* Custom Classes*/
 .img_box {
-    background-color: transparent;
-    border-radius: 20px;
-    left: 1px;
+    width: 100%;
     display: grid;
+    margin: 0;
+    padding: 0;
 }
 
 .button_selectors {
     background-color:  rgba(116, 116, 116, 0.35);
     color: white;
     cursor: -moz-grabbing;
-    top: 50%;
     margin: 2px;
     width: 30px;
     height: 30px;
@@ -55,6 +54,12 @@ a:hover {
     margin-top: 10px;
     left: 15px;
     width: 34px;
+}
+
+#button_resolution {
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
 #timestamp {
@@ -86,12 +91,12 @@ a:hover {
 .slider {
   -webkit-appearance: none;
   width: 50%;
-  height: 10px;
+  height: 6px;
   display: flex;
   margin-left: auto;
   margin-right:auto;
   border-radius: 5px;
-  background: #d3d3d383;
+  background: #d3d3d352;
   outline: none;
   opacity: 0.7;
   -webkit-transition: .2s;
@@ -108,7 +113,7 @@ a:hover {
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background: #fcfcfc;
+  background: #fcfcfcbf;
   cursor: pointer;
 }
 
